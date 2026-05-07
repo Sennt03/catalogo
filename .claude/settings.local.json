@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path 'C:\\\\Users\\\\HP\\\\Proyectos\\\\01.Freelance\\\\02.Catalogos\\\\01.catalogo' -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(php -r \"echo phpversion\\(\\); echo PHP_EOL; echo \\(extension_loaded\\('intl'\\) ? 'intl: ON' : 'intl: OFF'\\) . PHP_EOL;\")",
+      "PowerShell(php -r \"echo php_ini_loaded_file\\(\\);\" ; php -r \"echo ini_get\\('extension_dir'\\);\")",
+      "PowerShell(Get-Command *)",
+      "PowerShell(php -m 2>&1)",
+      "PowerShell(Get-Content *)",
+      "Bash(Test-Path *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\HP\\\\Proyectos\\\\01.Freelance\\\\02.Catalogos\\\\01.catalogo\\\\vendor\" -Directory | Where-Object {$_.Name -match 'intervention|spatie|image'} | Select-Object Name)",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(xargs grep -l \"getRelationManagers\\\\|relationManagers\")",
+      "Bash(grep -rn \"getPages\\\\|Pages\\\\\\\\\\\\\\\\\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/filament/src/Resources/Resource/Concerns/HasPages.php\")",
+      "Bash(grep -n \"Tables\\\\\\\\\\\\\\\\Columns\\\\|ImageColumn\\\\|TextColumn\\\\|BadgeColumn\\\\|IconColumn\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/tables/src/Columns\" -r --include=\"*.php\" -l)",
+      "Bash(grep -n \"Schemas\\\\\\\\\\\\\\\\Components\\\\\\\\|use Filament\\\\\\\\\\\\\\\\Schemas\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/filament/src/Resources/Resource.php\")",
+      "Bash(grep -rn \"use Filament\\\\\\\\\\\\\\\\Tables\\\\\\\\\\\\\\\\Actions\\\\|DeleteAction\\\\|EditAction\\\\|CreateAction\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/tables/src\" -l)",
+      "Bash(grep -rn \"public function table\\\\|Tables\\\\\\\\\\\\\\\\Table\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/tables/src/Table.php\")",
+      "Bash(grep -n \"Tables\\\\\\\\\\\\\\\\Actions\\\\|Filament\\\\\\\\\\\\\\\\Actions\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/filament/src/Resources/RelationManagers/RelationManager.php\")",
+      "Bash(grep -n \"public function\\\\|protected static\\\\|protected \\\\$\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/filament/src/Resources/Pages/CreateRecord.php\")",
+      "Bash(grep -rn \"use Filament\\\\\\\\\\\\\\\\Forms\\\\\\\\\\\\\\\\Get\\\\|class Get\\\\b\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/forms/src/\" --include=\"*.php\")",
+      "Bash(grep -rn \"use Filament\\\\\\\\\\\\\\\\Schemas\\\\\\\\\\\\\\\\Components\\\\\\\\\\\\\\\\Utilities\\\\\\\\\\\\\\\\Get\\\\|Filament\\\\\\\\\\\\\\\\Forms\\\\\\\\\\\\\\\\Get\" \"C:/Users/HP/Proyectos/01.Freelance/02.Catalogos/01.catalogo/vendor/filament/forms/src\" --include=\"*.php\")",
+      "Bash(php artisan *)",
+      "WebSearch",
+      "Bash(grep -n 'function getRealPath\\\\|function getPathname\\\\|function getTemporaryPath\\\\|function exists\\\\|protected $disk\\\\|protected $path' vendor/livewire/livewire/src/Features/SupportFileUploads/TemporaryUploadedFile.php)",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "Bash(php *)",
+      "PowerShell(head *)",
+      "PowerShell(php -r \"echo PHP_BINARY . PHP_EOL . PHP_PREFIX . PHP_EOL . PHP_EXTENSION_DIR;\")",
+      "PowerShell(cmd /c \"rmdir /s /q C:\\\\Users\\\\HP\\\\Downloads\\\\php-preview\")",
+      "PowerShell(Copy-Item *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(C:/php/php.exe artisan *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/admin)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ]
+}
