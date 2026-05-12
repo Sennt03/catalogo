@@ -28,6 +28,11 @@ class ImageService
             $source = $resized;
         }
 
+        $dir = dirname($destinationPath);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         imagejpeg($source, $destinationPath, self::JPEG_QUALITY);
         imagedestroy($source);
     }
