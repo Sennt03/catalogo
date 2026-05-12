@@ -59,7 +59,7 @@
                 <p class="hero-animate text-xs font-bold uppercase tracking-widest text-pink-400 mb-4">Nueva colección</p>
                 <h1 class="hero-animate-delay text-5xl font-extrabold text-gray-900 leading-tight">
                     Elegancia y Estilo<br>
-                    <span class="text-pink-500">Para Ti</span>
+                    <span class="text-pink-500">Para Ti.</span>
                 </h1>
                 <p class="hero-animate-delay mt-6 text-gray-500 text-lg leading-relaxed max-w-md">
                     Descubre nuestra colección exclusiva de ropa femenina. Diseños únicos que realzan tu belleza natural y personalidad.
