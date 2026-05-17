@@ -537,11 +537,13 @@ function shopPage() {
 
         get whatsappUrl() {
             const av = this.activeVariant || this.variants[0] || null;
-            const phone = (document.querySelector('meta[name="whatsapp"]') || {}).content || '';
+            const phone = (document.querySelector('meta[name="whatsapp-number"]') || {}).content || '';
+            const pedidoBase = (document.querySelector('meta[name="pedido-url"]') || {}).content || '';
             if (!this.product || !phone) return '#';
             const variantText = av && av.name ? ` (${av.name})` : '';
-            const priceText = av ? ` — $${av.price.toFixed(2)}` : '';
-            const msg = `Hola! Quisiera comprar:\n\n• ${this.product.name}${variantText} x${this.quantity}${priceText}\n\nPor favor confirmarme disponibilidad. ¡Gracias!`;
+            const link = (av && pedidoBase) ? `${pedidoBase}?c=${av.id}x${this.quantity}` : '';
+            const linkLine = link ? `\n\nResumen del pedido (precios y total): ${link}` : '';
+            const msg = `Hola! Quisiera comprar:\n\n• ${this.product.name}${variantText} x${this.quantity}${linkLine}\n\nPor favor confirmarme disponibilidad. ¡Gracias!`;
             return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
         },
 

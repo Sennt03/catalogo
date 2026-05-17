@@ -11,6 +11,26 @@
         .hero-animate-delay { animation: heroFadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
         .hero-animate-cta   { animation: heroFadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.28s both; }
         .hero-animate-img   { animation: heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+
+        /* Falling sparkles inside the hero — slow, elegant, subtle */
+        @keyframes heroSparkleFall {
+            0%   { transform: translateY(-10%) rotate(0deg);   opacity: 0; }
+            12%  { opacity: 1; }
+            88%  { opacity: 1; }
+            100% { transform: translateY(110%) rotate(180deg); opacity: 0; }
+        }
+        @keyframes heroSparkleFallSlow {
+            0%   { transform: translateY(-10%) rotate(-20deg);  opacity: 0; }
+            15%  { opacity: 1; }
+            85%  { opacity: 1; }
+            100% { transform: translateY(110%) rotate(160deg);  opacity: 0; }
+        }
+        @keyframes heroSparkleTwinkle {
+            0%, 100% { opacity: 0.2; transform: translateY(0) scale(1); }
+            50%      { opacity: 0.9; transform: translateY(0) scale(1.25); }
+        }
+        .hero-sparkles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .hero-sparkles > * { position: absolute; will-change: transform, opacity; }
     </style>
 </head>
 <style>
@@ -31,10 +51,7 @@
     <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-pink-100 transition-shadow duration-300">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <svg class="w-8 h-8 text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                </svg>
-                <span class="text-xl font-bold text-gray-900">Bella Moda</span>
+                <img src="{{ asset('images/logo.png') }}" alt="Bella Moda" class="h-14 w-auto object-contain block">
             </a>
 
             <div class="hidden md:flex items-center gap-8">
@@ -53,13 +70,48 @@
     </nav>
 
     {{-- Hero --}}
-    <section class="min-h-[calc(100vh-73px)] flex items-center" style="background: linear-gradient(135deg, #fce8ef 0%, #fdf4f7 50%, #fff0f5 100%);">
-        <div class="max-w-7xl mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+    <section class="relative overflow-hidden min-h-[calc(100vh-73px)] flex items-center" style="background: linear-gradient(135deg, #fce8ef 0%, #fdf4f7 50%, #fff0f5 100%);">
+
+        {{-- Decorative falling sparkles layer (behind hero content) --}}
+        @php
+            $sparkPath  = 'M10 0l1.8 8.2L20 10l-8.2 1.8L10 20l-1.8-8.2L0 10l8.2-1.8Z';
+            $sparkColors = ['#f9a8d4', '#f472b6', '#fbcfe8', '#ec4899', '#fce7f3'];
+            /* [left%, size(px), duration(s), delay(s), anim, isDot] */
+            $sparkles = [
+                [ 4,  6, 14,  -2, 'a', false], [11,  4, 18,  -7, 'a', true ],
+                [18,  5, 16, -10, 'b', false], [25,  3, 22,  -1, 'a', false],
+                [32,  7, 13,  -5, 'b', false], [38,  4, 19, -12, 'a', true ],
+                [45,  5, 15,  -8, 'a', false], [52,  3, 21,  -3, 'b', false],
+                [59,  6, 17,  -9, 'a', false], [66,  4, 23, -14, 'b', true ],
+                [73,  5, 14,  -6, 'a', false], [80,  3, 20, -11, 'b', false],
+                [87,  6, 16,  -4, 'a', false], [94,  4, 18, -13, 'a', true ],
+                [ 8,  3, 24, -15, 'b', false], [42,  5, 17,  -2, 'a', false],
+                [70,  3, 21,  -8, 'b', true ], [96,  5, 19,  -6, 'a', false],
+            ];
+        @endphp
+        <div class="hero-sparkles" aria-hidden="true">
+            @foreach ($sparkles as $i => $sp)
+                @php [$left, $size, $dur, $delay, $anim, $isDot] = $sp; $color = $sparkColors[$i % count($sparkColors)]; @endphp
+                @if ($isDot)
+                    <span style="left:{{ $left }}%;top:-10px;width:{{ $size }}px;height:{{ $size }}px;border-radius:9999px;background:{{ $color }};opacity:.55;box-shadow:0 0 6px {{ $color }};animation:heroSparkleFall {{ $dur }}s linear {{ $delay }}s infinite"></span>
+                @else
+                    <svg viewBox="0 0 20 20" fill="{{ $color }}" style="left:{{ $left }}%;top:-12px;width:{{ $size * 2 }}px;height:{{ $size * 2 }}px;filter:drop-shadow(0 0 3px {{ $color }});opacity:.7;animation:heroSparkle{{ $anim === 'b' ? 'FallSlow' : 'Fall' }} {{ $dur }}s linear {{ $delay }}s infinite"><path d="{{ $sparkPath }}"/></svg>
+                @endif
+            @endforeach
+
+            {{-- A few stationary twinkling sparkles for extra elegance --}}
+            <svg viewBox="0 0 20 20" fill="#f472b6" style="left:15%;top:22%;width:10px;height:10px;animation:heroSparkleTwinkle 3.5s ease-in-out 0s infinite"><path d="{{ $sparkPath }}"/></svg>
+            <svg viewBox="0 0 20 20" fill="#ec4899" style="left:78%;top:18%;width:8px;height:8px;animation:heroSparkleTwinkle 4.2s ease-in-out -1.5s infinite"><path d="{{ $sparkPath }}"/></svg>
+            <svg viewBox="0 0 20 20" fill="#f9a8d4" style="left:55%;top:72%;width:12px;height:12px;animation:heroSparkleTwinkle 5s ease-in-out -2.8s infinite"><path d="{{ $sparkPath }}"/></svg>
+            <svg viewBox="0 0 20 20" fill="#f472b6" style="left:30%;top:84%;width:9px;height:9px;animation:heroSparkleTwinkle 3.8s ease-in-out -0.8s infinite"><path d="{{ $sparkPath }}"/></svg>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
                 <p class="hero-animate text-xs font-bold uppercase tracking-widest text-pink-400 mb-4">Nueva colección</p>
                 <h1 class="hero-animate-delay text-5xl font-extrabold text-gray-900 leading-tight">
                     Elegancia y Estilo<br>
-                    <span class="text-pink-500">Para Ti.</span>
+                    <span class="text-pink-500">Para Ti</span>
                 </h1>
                 <p class="hero-animate-delay mt-6 text-gray-500 text-lg leading-relaxed max-w-md">
                     Descubre nuestra colección exclusiva de ropa femenina. Diseños únicos que realzan tu belleza natural y personalidad.
@@ -80,10 +132,8 @@
             <div class="hero-animate-img flex justify-center">
                 <div class="relative w-full max-w-md">
                     <div class="absolute inset-0 bg-pink-300 rounded-3xl blur-3xl opacity-20 translate-y-4 scale-95"></div>
-                    <div class="relative w-full aspect-square bg-gradient-to-br from-pink-200 to-rose-100 rounded-3xl flex items-center justify-center shadow-2xl shadow-pink-100">
-                        <svg class="w-36 h-36 text-pink-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                        </svg>
+                    <div class="relative w-full aspect-square bg-gradient-to-br from-pink-200 to-rose-100 rounded-3xl flex items-center justify-center shadow-2xl shadow-pink-100 overflow-visible">
+                        <img src="{{ asset('images/home.png') }}" alt="Bella Moda" class="w-full h-full object-cover">
                         {{-- Decorative floating badges --}}
                         <span class="absolute -top-3 -right-3 bg-white text-pink-500 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-pink-100">✨ Nueva colección</span>
                         <span class="absolute -bottom-3 -left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">100% Exclusivo</span>
@@ -160,7 +210,7 @@
                 ¿Tienes alguna pregunta? Estamos aquí para ayudarte y asesorarte
             </p>
             <div class="mt-10 flex justify-center gap-4 flex-wrap" data-reveal data-reveal-delay="220">
-                <a href="https://wa.me/{{ config('services.whatsapp.number') }}"
+                <a href="{{ config('services.whatsapp.link') }}"
                    target="_blank"
                    class="inline-flex items-center gap-2 text-white font-semibold px-8 py-3.5 rounded-full hover:shadow-lg transition-all active:scale-95"
                    style="background-color:#25D366;box-shadow:0 4px 14px rgba(37,211,102,.3);">
@@ -192,11 +242,23 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                     </svg>
                 </div>
-                <p class="text-gray-800 font-semibold text-lg">Calle Principal #123</p>
-                <p class="text-gray-400 mt-1">Ciudad, País</p>
+                <p class="text-gray-800 font-semibold text-lg">Centro Histórico</p>
+                <p class="text-gray-400 mt-1">Jose Mejía Lequerica, OE 9-154, Quito</p>
                 <div class="mt-5 pt-5 border-t border-gray-100 flex items-center justify-center gap-2">
                     <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                    <p class="text-gray-500 font-medium text-sm">Lunes a Sábado: 9:00 AM – 7:00 PM</p>
+                    <p class="text-gray-500 font-medium text-sm">Lunes a Viernes: 8:30 AM – 6:00 PM</p>
+                    <p class="text-gray-500 font-medium text-sm">Sábados: 6:00 AM – 6:00 PM</p>
+                </div>
+                <div class="mt-8 rounded-2xl overflow-hidden border border-pink-100">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d249.3618906353517!2d-78.5158097!3d-0.2149235!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d59a2c0ee1b1c9%3A0x5d184d4de3b1e5bc!2sJose%20Mejia%20Lequerica%2C%20OE%209-154%2C%20170401%20Quito!5e0!3m2!1ses!2sec!4v1779024540205!5m2!1ses!2sec"
+                        width="100%"
+                        height="320"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="w-full block"></iframe>
                 </div>
             </div>
         </div>

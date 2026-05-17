@@ -36,7 +36,8 @@ return [
     ],
 
     'whatsapp' => [
-        'number' => env('WHATSAPP_NUMBER', ''),
+        'number' => env('WHATSAPP_NUMBER', '593967780939'),
+        'link' => env('WHATSAPP_LINK', 'https://wa.me/message/LXSTEQEKZL3TI1'),
     ],
 
 ];

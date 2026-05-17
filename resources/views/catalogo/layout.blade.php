@@ -4,11 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('page-title', 'Catálogo') - {{ config('app.name', 'Bella Moda') }}</title>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('images/home.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('images/home.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
-    <meta name="whatsapp" content="{{ config('services.whatsapp.number') }}">
+    <meta name="whatsapp-number" content="{{ config('services.whatsapp.number') }}">
+    <meta name="pedido-url" content="{{ route('pedido.show') }}">
     <style>
         [x-cloak]              { display: none !important; }
         .scroll-y-thin::-webkit-scrollbar       { width: 4px; }
@@ -63,11 +64,30 @@ document.addEventListener('alpine:init', () => {
         get count() { return this.items.reduce((s, x) => s + x.quantity, 0); },
         get total() { return this.items.reduce((s, x) => s + parseFloat(x.price) * x.quantity, 0); },
 
+        get cartCode() {
+            return [...this.items]
+                .map(x => ({ id: parseInt(x.variantId, 10), qty: parseInt(x.quantity, 10) }))
+                .filter(x => x.id > 0 && x.qty > 0)
+                .sort((a, b) => a.id - b.id)
+                .map(x => `${x.id}x${x.qty}`)
+                .join('-');
+        },
+
+        pedidoUrl(baseUrl) {
+            const code = this.cartCode;
+            if (! code) return baseUrl;
+            return `${baseUrl}?c=${code}`;
+        },
+
         whatsappUrl(phone) {
             const lines = this.items.map(x =>
                 `• ${x.productName}${x.variantName ? ' (' + x.variantName + ')' : ''} x${x.quantity}`
             );
-            const msg = `Hola! Me gustaría comprar:\n\n${lines.join('\n')}\n\nTotal estimado: $${this.total.toFixed(2)}`;
+            const meta = document.querySelector('meta[name="pedido-url"]');
+            const baseUrl = meta ? meta.content : '';
+            const link = baseUrl ? this.pedidoUrl(baseUrl) : '';
+            const linkLine = link ? `\n\nResumen del pedido (precios y total): ${link}` : '';
+            const msg = `Hola! Me gustaría comprar:\n\n${lines.join('\n')}${linkLine}`;
             return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
         },
     });
@@ -83,10 +103,7 @@ document.addEventListener('alpine:init', () => {
         </div>
 
         <a href="{{ route('home') }}" class="flex-1 flex items-center justify-center gap-2">
-            <svg class="w-7 h-7 text-pink-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-            </svg>
-            <span class="text-lg font-bold text-gray-900">Bella Moda</span>
+            <img src="{{ asset('images/logo.png') }}" alt="Bella Moda" class="h-12 w-auto object-contain block">
         </a>
 
         <div class="w-40 flex-shrink-0 flex justify-end">
