@@ -460,10 +460,12 @@
          x-transition:leave-end="opacity-0"
          @keydown.escape.window="closeLightbox()">
 
-        <button @click="closeLightbox()"
+        <button @click.stop="closeLightbox()"
+                @touchend.stop="closeLightbox()"
                 aria-label="Cerrar"
-                class="absolute top-4 right-4 z-20 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                style="top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right));"
+                class="absolute z-30 w-12 h-12 bg-white text-gray-800 hover:bg-pink-50 active:bg-pink-100 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
         </button>
@@ -842,11 +844,34 @@ function shopPage() {
         },
 
         onLbTouchEnd(e) {
-            // If a pinch ended and scale dropped to 1, recenter
-            if (this.lbScale <= 1.02) {
+            const t = (e.changedTouches && e.changedTouches[0]) || null;
+            const wasSimpleTap =
+                this._lbMode !== 'pinch' &&
+                !this._lbSwiped &&
+                t &&
+                Math.abs(t.clientX - this._lbStartTouchX) < 8 &&
+                Math.abs(t.clientY - this._lbStartTouchY) < 8;
+
+            if (this.lbScale <= 1.02 && this.lbScale !== 1) {
                 this.lbAnimate = true;
                 this.resetZoom();
             }
+
+            // Simple tap: zoomed → exit zoom, otherwise → close lightbox.
+            // Wait briefly so a double-tap (which resets _lbLastTap to 0 in touchstart) can override.
+            if (wasSimpleTap) {
+                const tapSignature = this._lbLastTap;
+                setTimeout(() => {
+                    if (this._lbLastTap !== tapSignature) return; // double-tap consumed it
+                    if (this.lbScale > 1) {
+                        this.lbAnimate = true;
+                        this.resetZoom();
+                    } else {
+                        this.closeLightbox();
+                    }
+                }, 280);
+            }
+
             this._lbMode = null;
         },
 
