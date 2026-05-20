@@ -470,13 +470,22 @@
 
         <button x-show="lbScale > 1"
                 @click.stop="resetZoom()"
-                aria-label="Restablecer zoom"
-                class="absolute top-4 left-4 z-20 px-3 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center gap-1.5 text-white text-sm transition-all">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+                aria-label="Quitar zoom"
+                class="absolute top-4 left-4 z-20 px-4 h-11 bg-pink-500/95 hover:bg-pink-600 active:bg-pink-700 shadow-lg rounded-full flex items-center gap-2 text-white text-sm font-semibold transition-all hover:scale-105">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
-            <span>1:1</span>
+            <span>Quitar zoom</span>
         </button>
+
+        {{-- Floating hint while zoomed (mobile) --}}
+        <div x-show="lbScale > 1"
+             class="absolute bottom-6 left-1/2 -translate-x-1/2 sm:hidden bg-white/95 text-pink-600 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-20 pointer-events-none flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59" />
+            </svg>
+            Doble toca o pulsa "Quitar zoom"
+        </div>
 
         <button x-show="visibleImages.length > 1 && lbScale === 1"
                 @click.stop="prevImage()"
