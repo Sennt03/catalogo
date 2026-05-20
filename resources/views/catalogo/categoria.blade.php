@@ -110,9 +110,10 @@
         @endif
     </div>
 
-    {{-- ── Product Modal ─────────────────────────────────────────────────── --}}
+    {{-- ── Product Modal (teleported to body to sit above the sticky navbar) ── --}}
+    <template x-teleport="body">
     <div x-show="isOpen" x-cloak
-         class="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6"
+         class="fixed inset-0 z-[70] flex items-stretch justify-center sm:items-center sm:p-6"
          x-transition:enter="transition-opacity ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -129,7 +130,7 @@
              @click.stop>
 
             {{-- Pink accent bar --}}
-            <div class="absolute top-0 left-0 right-0 h-1 sm:hidden"
+            <div class="absolute top-0 left-0 right-0 h-1 sm:hidden z-20"
                  style="background: linear-gradient(90deg,#f43f5e,#ec4899,#f43f5e);background-size:200% auto;">
             </div>
             <div class="absolute top-0 left-0 bottom-0 w-1 hidden sm:block"
@@ -138,8 +139,10 @@
 
             {{-- Close --}}
             <button @click="close()"
-                    class="absolute top-3 right-3 z-20 w-9 h-9 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-gray-700 transition-all hover:scale-110 active:scale-95">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    aria-label="Cerrar"
+                    style="top: max(0.75rem, env(safe-area-inset-top)); right: max(0.75rem, env(safe-area-inset-right));"
+                    class="absolute z-30 w-11 h-11 sm:w-9 sm:h-9 bg-white shadow-lg ring-1 ring-gray-200 hover:bg-pink-50 active:bg-pink-100 rounded-full flex items-center justify-center text-gray-700 transition-all hover:scale-110 active:scale-95">
+                <svg class="w-6 h-6 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
             </button>
@@ -448,10 +451,12 @@
             </template>
         </div>
     </div>
+    </template>
 
-    {{-- ── Lightbox (with pinch-to-zoom + pan + swipe on mobile) ──────────── --}}
+    {{-- ── Lightbox (teleported, sits above the product modal) ────────────── --}}
+    <template x-teleport="body">
     <div x-show="lightboxOpen" x-cloak
-         class="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center overflow-hidden touch-none"
+         class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center overflow-hidden touch-none"
          x-transition:enter="transition-opacity ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -546,6 +551,7 @@
             Pellizca para zoom · Desliza para cambiar
         </div>
     </div>
+    </template>
 
 </div>
 
