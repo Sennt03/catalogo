@@ -112,7 +112,7 @@
 
     {{-- ── Product Modal ─────────────────────────────────────────────────── --}}
     <div x-show="isOpen" x-cloak
-         class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+         class="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6"
          x-transition:enter="transition-opacity ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -125,7 +125,7 @@
         <div @click="close()" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
         {{-- Card --}}
-        <div class="relative w-full sm:max-w-4xl bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row max-h-[92vh] sm:max-h-[88vh]"
+        <div class="relative w-full sm:max-w-4xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row h-[100dvh] sm:h-auto sm:max-h-[88vh]"
              @click.stop>
 
             {{-- Pink accent bar --}}
@@ -159,19 +159,23 @@
             <template x-if="!loading && product">
                 <div class="flex flex-col sm:flex-row w-full overflow-hidden" style="max-height: inherit">
 
-                    {{-- ── Gallery (left) ────────────────────────────────── --}}
+                    {{-- ── Gallery (left on desktop / top on mobile) ─────── --}}
                     <div class="sm:w-[44%] flex flex-col flex-shrink-0 bg-gray-50 sm:pl-1">
 
-                        {{-- Main image --}}
-                        <div class="relative overflow-hidden h-60 sm:h-auto sm:flex-1"
-                             :class="zooming ? 'cursor-zoom-out' : (currentImage ? 'cursor-zoom-in' : '')"
-                             @click="if(currentImage){ zooming = !zooming }"
-                             @mousemove="if(zooming) handleZoom($event)">
+                        {{-- Main image area (tap on mobile opens lightbox, click on desktop zooms) --}}
+                        <div class="relative overflow-hidden bg-gray-50 select-none h-[55vh] sm:h-auto sm:flex-1"
+                             :class="zooming ? 'cursor-zoom-out' : (currentImage ? 'sm:cursor-zoom-in' : '')"
+                             @click="onMainImageClick()"
+                             @mousemove="if(zooming) handleZoom($event)"
+                             @touchstart.passive="onSwipeStart($event)"
+                             @touchmove.passive="onSwipeMove($event)"
+                             @touchend="onSwipeEnd($event)">
 
                             <template x-if="currentImage">
                                 <img
                                     :src="currentImage.url"
                                     :alt="currentImage.alt"
+                                    draggable="false"
                                     :style="{
                                         transform: zooming ? 'scale(2.4)' : 'scale(1)',
                                         transformOrigin: `${zoomX}% ${zoomY}%`,
@@ -179,7 +183,7 @@
                                         pointerEvents: 'none',
                                         userSelect: 'none'
                                     }"
-                                    class="w-full h-full object-cover">
+                                    class="w-full h-full object-contain sm:object-cover">
                             </template>
 
                             <template x-if="!currentImage">
@@ -190,16 +194,17 @@
                                 </div>
                             </template>
 
-                            {{-- Expand to lightbox (top-right) --}}
+                            {{-- Expand to lightbox (always visible — primary action on mobile) --}}
                             <button x-show="currentImage && !zooming"
-                                    @click.stop="lightboxOpen = true"
-                                    class="absolute top-2.5 left-2.5 w-8 h-8 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 z-10">
+                                    @click.stop="openLightbox()"
+                                    aria-label="Ver imagen en pantalla completa"
+                                    class="absolute top-2.5 left-2.5 w-9 h-9 sm:w-8 sm:h-8 bg-black/40 backdrop-blur-sm hover:bg-black/55 active:bg-black/65 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 z-10">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                                 </svg>
                             </button>
 
-                            {{-- Zoom-off hint --}}
+                            {{-- Zoom-off hint (desktop) --}}
                             <div x-show="zooming"
                                  class="absolute top-2.5 right-10 bg-black/40 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                                 Clic para salir del zoom
@@ -207,34 +212,51 @@
 
                             {{-- Image counter --}}
                             <div x-show="visibleImages.length > 1 && !zooming"
-                                 class="absolute bottom-2.5 right-2.5 bg-black/40 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                                 class="absolute bottom-2.5 right-2.5 bg-black/45 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full pointer-events-none">
                                 <span x-text="selectedImageIndex + 1"></span>/<span x-text="visibleImages.length"></span>
+                            </div>
+
+                            {{-- Tap hint (mobile) --}}
+                            <div x-show="currentImage && !zooming"
+                                 class="absolute bottom-2.5 left-2.5 bg-black/45 backdrop-blur-sm text-white text-[11px] px-2 py-0.5 rounded-full flex sm:hidden items-center gap-1 pointer-events-none">
+                                Toca para ampliar
                             </div>
 
                             {{-- Zoom hint (desktop, not zoomed) --}}
                             <div x-show="currentImage && !zooming"
-                                 class="absolute bottom-2.5 left-2.5 bg-black/30 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full hidden sm:flex items-center gap-1">
+                                 class="absolute bottom-2.5 left-2.5 bg-black/30 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full hidden sm:flex items-center gap-1 pointer-events-none">
                                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
                                 </svg>
                                 Clic para zoom
                             </div>
 
-                            {{-- Arrows (hidden while zooming) --}}
+                            {{-- Arrows (hidden while zooming, hidden on mobile — use swipe instead) --}}
                             <button x-show="visibleImages.length > 1 && !zooming"
                                     @click.stop="prevImage()"
-                                    class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/85 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 transition-all hover:scale-110 active:scale-95">
+                                    aria-label="Imagen anterior"
+                                    class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/85 hover:bg-white rounded-full shadow-lg items-center justify-center text-gray-600 transition-all hover:scale-110 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
                             <button x-show="visibleImages.length > 1 && !zooming"
                                     @click.stop="nextImage()"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/85 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 transition-all hover:scale-110 active:scale-95">
+                                    aria-label="Imagen siguiente"
+                                    class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/85 hover:bg-white rounded-full shadow-lg items-center justify-center text-gray-600 transition-all hover:scale-110 active:scale-95">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
+
+                            {{-- Mobile dots indicator --}}
+                            <div x-show="visibleImages.length > 1 && !zooming"
+                                 class="absolute bottom-10 left-1/2 -translate-x-1/2 flex sm:hidden gap-1.5 pointer-events-none">
+                                <template x-for="(img, idx) in visibleImages" :key="'dot-'+img.id">
+                                    <span :class="selectedImageIndex === idx ? 'bg-white w-4' : 'bg-white/50 w-1.5'"
+                                          class="h-1.5 rounded-full transition-all duration-200"></span>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- Thumbnails --}}
@@ -416,7 +438,7 @@
                             {{-- Full description --}}
                             <div x-show="product.description"
                                  class="mt-4 pt-4 border-t border-gray-100">
-                                <p class="text-gray-500 text-sm leading-relaxed" x-text="product.description"></p>
+                                <div class="product-description text-gray-600 text-sm leading-relaxed" x-html="product.description"></div>
                             </div>
 
                         </div>
@@ -427,56 +449,90 @@
         </div>
     </div>
 
-    {{-- ── Lightbox ──────────────────────────────────────────────────────── --}}
+    {{-- ── Lightbox (with pinch-to-zoom + pan + swipe on mobile) ──────────── --}}
     <div x-show="lightboxOpen" x-cloak
-         class="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center"
+         class="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center overflow-hidden touch-none"
          x-transition:enter="transition-opacity ease-out duration-200"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition-opacity ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click="lightboxOpen = false"
-         @keydown.escape.window="lightboxOpen = false">
+         @keydown.escape.window="closeLightbox()">
 
-        <button @click="lightboxOpen = false"
-                class="absolute top-4 right-4 z-10 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
+        <button @click="closeLightbox()"
+                aria-label="Cerrar"
+                class="absolute top-4 right-4 z-20 w-11 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
         </button>
 
-        <button x-show="visibleImages.length > 1"
+        <button x-show="lbScale > 1"
+                @click.stop="resetZoom()"
+                aria-label="Restablecer zoom"
+                class="absolute top-4 left-4 z-20 px-3 h-11 bg-white/10 hover:bg-white/20 rounded-full flex items-center gap-1.5 text-white text-sm transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
+            </svg>
+            <span>1:1</span>
+        </button>
+
+        <button x-show="visibleImages.length > 1 && lbScale === 1"
                 @click.stop="prevImage()"
-                class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 hover:bg-white/25 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
+                aria-label="Anterior"
+                class="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 hover:bg-white/25 rounded-full items-center justify-center text-white transition-all hover:scale-110">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
         </button>
 
-        <button x-show="visibleImages.length > 1"
+        <button x-show="visibleImages.length > 1 && lbScale === 1"
                 @click.stop="nextImage()"
-                class="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 hover:bg-white/25 rounded-full flex items-center justify-center text-white transition-all hover:scale-110">
+                aria-label="Siguiente"
+                class="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/10 hover:bg-white/25 rounded-full items-center justify-center text-white transition-all hover:scale-110">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>
         </button>
 
-        <template x-if="currentImage">
-            <img :src="currentImage.url" :alt="currentImage.alt"
-                 class="max-w-full max-h-full object-contain p-4 sm:p-10 select-none"
-                 @click.stop
-                 style="pointer-events:none">
-        </template>
+        {{-- Image stage: handles pinch, pan, swipe and double-tap --}}
+        <div class="absolute inset-0 flex items-center justify-center touch-none overflow-hidden"
+             @click.self="if(lbScale === 1) closeLightbox()"
+             @touchstart.prevent="onLbTouchStart($event)"
+             @touchmove.prevent="onLbTouchMove($event)"
+             @touchend="onLbTouchEnd($event)"
+             @wheel.prevent="onLbWheel($event)">
+            <template x-if="currentImage">
+                <img :src="currentImage.url" :alt="currentImage.alt"
+                     draggable="false"
+                     :style="{
+                        transform: `translate3d(${lbX}px, ${lbY}px, 0) scale(${lbScale})`,
+                        transition: lbAnimate ? 'transform 0.25s ease-out' : 'none',
+                        transformOrigin: 'center center',
+                        willChange: 'transform',
+                        userSelect: 'none',
+                        pointerEvents: 'none'
+                     }"
+                     class="max-w-full max-h-full object-contain p-4 sm:p-10">
+            </template>
+        </div>
 
-        <div x-show="visibleImages.length > 1"
-             class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
+        {{-- Counter / dots --}}
+        <div x-show="visibleImages.length > 1 && lbScale === 1"
+             class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             <template x-for="(img, idx) in visibleImages" :key="img.id">
-                <button @click.stop="selectImage(idx)"
+                <button @click.stop="selectImage(idx); resetZoom()"
                         :class="selectedImageIndex === idx ? 'bg-white w-5' : 'bg-white/35 hover:bg-white/60 w-2'"
                         class="h-2 rounded-full transition-all duration-200">
                 </button>
             </template>
+        </div>
+
+        {{-- Hint --}}
+        <div x-show="lbScale === 1 && visibleImages.length > 1"
+             class="absolute top-4 left-1/2 -translate-x-1/2 sm:hidden bg-white/10 backdrop-blur-sm text-white/80 text-[11px] px-3 py-1 rounded-full pointer-events-none">
+            Pellizca para zoom · Desliza para cambiar
         </div>
     </div>
 
@@ -499,6 +555,24 @@ function shopPage() {
         zoomX: 50,
         zoomY: 50,
         lightboxOpen: false,
+        // Swipe state (modal main image)
+        swipeStartX: 0,
+        swipeStartY: 0,
+        swipeActive: false,
+        // Lightbox transform + gesture state
+        lbScale: 1,
+        lbX: 0,
+        lbY: 0,
+        lbAnimate: false,
+        _lbStartDist: 0,
+        _lbStartScale: 1,
+        _lbStartX: 0,
+        _lbStartY: 0,
+        _lbStartTouchX: 0,
+        _lbStartTouchY: 0,
+        _lbLastTap: 0,
+        _lbMode: null,  // 'pan' | 'pinch' | 'swipe' | null
+        _lbSwiped: false,
 
         get activeVariant() {
             if (!this.product || this.variants.length === 0) return null;
@@ -593,6 +667,7 @@ function shopPage() {
             this.isOpen = false;
             this.lightboxOpen = false;
             this.zooming = false;
+            this.resetZoom();
             document.body.style.overflow = '';
         },
 
@@ -605,18 +680,175 @@ function shopPage() {
             const max = this.visibleImages.length - 1;
             this.selectedImageIndex = this.selectedImageIndex > 0 ? this.selectedImageIndex - 1 : max;
             this.zooming = false;
+            this.resetZoom();
         },
 
         nextImage() {
             const max = this.visibleImages.length - 1;
             this.selectedImageIndex = this.selectedImageIndex < max ? this.selectedImageIndex + 1 : 0;
             this.zooming = false;
+            this.resetZoom();
         },
 
         handleZoom(event) {
             const rect = event.currentTarget.getBoundingClientRect();
             this.zoomX = ((event.clientX - rect.left) / rect.width * 100).toFixed(1);
             this.zoomY = ((event.clientY - rect.top) / rect.height * 100).toFixed(1);
+        },
+
+        // ── Mobile-friendly main-image interactions ────────────────────────
+        onMainImageClick() {
+            if (!this.currentImage) return;
+            // Touch devices: tap opens lightbox (no inline zoom on mobile)
+            const isTouch = window.matchMedia('(hover: none)').matches;
+            if (isTouch) {
+                this.openLightbox();
+                return;
+            }
+            // Desktop: toggle inline zoom
+            this.zooming = !this.zooming;
+        },
+
+        openLightbox() {
+            this.resetZoom();
+            this.lightboxOpen = true;
+        },
+
+        closeLightbox() {
+            this.lightboxOpen = false;
+            this.resetZoom();
+        },
+
+        // ── Swipe on modal main image (mobile) ─────────────────────────────
+        onSwipeStart(e) {
+            if (e.touches.length !== 1) return;
+            this.swipeActive = true;
+            this.swipeStartX = e.touches[0].clientX;
+            this.swipeStartY = e.touches[0].clientY;
+        },
+
+        onSwipeMove() { /* passive listener — no-op */ },
+
+        onSwipeEnd(e) {
+            if (!this.swipeActive) return;
+            this.swipeActive = false;
+            const t = (e.changedTouches && e.changedTouches[0]) || null;
+            if (!t || this.visibleImages.length < 2) return;
+            const dx = t.clientX - this.swipeStartX;
+            const dy = t.clientY - this.swipeStartY;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                dx < 0 ? this.nextImage() : this.prevImage();
+            }
+        },
+
+        // ── Lightbox: pinch zoom, pan, double-tap, swipe ───────────────────
+        resetZoom() {
+            this.lbScale = 1;
+            this.lbX = 0;
+            this.lbY = 0;
+            this.lbAnimate = false;
+        },
+
+        _dist(a, b) {
+            const dx = a.clientX - b.clientX;
+            const dy = a.clientY - b.clientY;
+            return Math.hypot(dx, dy);
+        },
+
+        _clampPan() {
+            // Keep image roughly within view: limit translation by (scale-1) * half viewport
+            const max = (this.lbScale - 1) * Math.max(window.innerWidth, window.innerHeight) / 2;
+            this.lbX = Math.max(-max, Math.min(max, this.lbX));
+            this.lbY = Math.max(-max, Math.min(max, this.lbY));
+        },
+
+        onLbTouchStart(e) {
+            this.lbAnimate = false;
+            this._lbSwiped = false;
+
+            if (e.touches.length === 2) {
+                this._lbMode = 'pinch';
+                this._lbStartDist = this._dist(e.touches[0], e.touches[1]);
+                this._lbStartScale = this.lbScale;
+                return;
+            }
+
+            // Single touch: double-tap detect, then pan or swipe
+            const t = e.touches[0];
+            const now = Date.now();
+            if (now - this._lbLastTap < 300) {
+                this.lbAnimate = true;
+                if (this.lbScale > 1) {
+                    this.resetZoom();
+                } else {
+                    this.lbScale = 2.5;
+                    this.lbX = 0;
+                    this.lbY = 0;
+                }
+                this._lbLastTap = 0;
+                this._lbMode = null;
+                return;
+            }
+            this._lbLastTap = now;
+
+            this._lbStartTouchX = t.clientX;
+            this._lbStartTouchY = t.clientY;
+            this._lbStartX = this.lbX;
+            this._lbStartY = this.lbY;
+            this._lbMode = this.lbScale > 1 ? 'pan' : 'swipe';
+        },
+
+        onLbTouchMove(e) {
+            if (this._lbMode === 'pinch' && e.touches.length === 2) {
+                const dist = this._dist(e.touches[0], e.touches[1]);
+                if (this._lbStartDist > 0) {
+                    let next = this._lbStartScale * (dist / this._lbStartDist);
+                    next = Math.max(1, Math.min(5, next));
+                    this.lbScale = next;
+                    if (this.lbScale === 1) { this.lbX = 0; this.lbY = 0; }
+                    else { this._clampPan(); }
+                }
+                return;
+            }
+
+            if (this._lbMode === 'pan' && e.touches.length === 1) {
+                const t = e.touches[0];
+                this.lbX = this._lbStartX + (t.clientX - this._lbStartTouchX);
+                this.lbY = this._lbStartY + (t.clientY - this._lbStartTouchY);
+                this._clampPan();
+                return;
+            }
+
+            // swipe — track horizontal delta on the image itself for paging
+            if (this._lbMode === 'swipe' && e.touches.length === 1) {
+                const t = e.touches[0];
+                const dx = t.clientX - this._lbStartTouchX;
+                const dy = t.clientY - this._lbStartTouchY;
+                if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2 && !this._lbSwiped) {
+                    this._lbSwiped = true;
+                    this.lbAnimate = true;
+                    dx < 0 ? this.nextImage() : this.prevImage();
+                }
+            }
+        },
+
+        onLbTouchEnd(e) {
+            // If a pinch ended and scale dropped to 1, recenter
+            if (this.lbScale <= 1.02) {
+                this.lbAnimate = true;
+                this.resetZoom();
+            }
+            this._lbMode = null;
+        },
+
+        onLbWheel(e) {
+            this.lbAnimate = false;
+            const delta = -e.deltaY * 0.0015;
+            let next = this.lbScale * (1 + delta);
+            next = Math.max(1, Math.min(5, next));
+            this.lbScale = next;
+            if (this.lbScale === 1) { this.lbX = 0; this.lbY = 0; }
+            else { this._clampPan(); }
         },
 
         selectValue(attrId, valueId) {

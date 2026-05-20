@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['category_id', 'name', 'slug', 'description', 'short_description', 'has_variants', 'is_active', 'is_featured', 'sort_order'])]
 class Product extends Model
@@ -25,6 +26,18 @@ class Product extends Model
             'is_featured' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(static function (Product $product): void {
+            $product->images()->each(static fn (ProductImage $image) => $image->delete());
+
+            $directory = "products/{$product->getKey()}";
+            if (Storage::disk('public')->exists($directory)) {
+                Storage::disk('public')->deleteDirectory($directory);
+            }
+        });
     }
 
     public function category(): BelongsTo

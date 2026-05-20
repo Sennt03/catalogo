@@ -25,9 +25,20 @@ class ProductImage extends Model
 
     protected static function booted(): void
     {
+        static::updating(static function (ProductImage $image): void {
+            if ($image->isDirty('path') && $image->getOriginal('path')) {
+                Storage::disk('public')->delete($image->getOriginal('path'));
+            }
+        });
+
         static::deleted(static function (ProductImage $image): void {
             if ($image->path && Storage::disk('public')->exists($image->path)) {
                 Storage::disk('public')->delete($image->path);
+            }
+
+            $directory = "products/{$image->product_id}";
+            if (Storage::disk('public')->exists($directory) && empty(Storage::disk('public')->allFiles($directory))) {
+                Storage::disk('public')->deleteDirectory($directory);
             }
         });
     }

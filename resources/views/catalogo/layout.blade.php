@@ -24,6 +24,30 @@
             background-image: radial-gradient(circle, rgba(244,114,182,0.12) 1.5px, transparent 1.5px);
             background-size: 38px 38px;
         }
+
+        /* Rich-text description rendered from admin RichEditor */
+        .product-description p              { margin: 0 0 .75rem 0; }
+        .product-description p:last-child   { margin-bottom: 0; }
+        .product-description strong, .product-description b { font-weight: 600; color:#374151; }
+        .product-description em, .product-description i     { font-style: italic; }
+        .product-description u              { text-decoration: underline; }
+        .product-description a              { color:#ec4899; text-decoration: underline; }
+        .product-description a:hover        { color:#db2777; }
+        .product-description ul             { list-style: disc; padding-left: 1.25rem; margin: 0 0 .75rem 0; }
+        .product-description ol             { list-style: decimal; padding-left: 1.25rem; margin: 0 0 .75rem 0; }
+        .product-description li             { margin-bottom: .25rem; }
+        .product-description h1, .product-description h2, .product-description h3,
+        .product-description h4, .product-description h5, .product-description h6 {
+            font-weight: 700; color:#111827; margin: 1rem 0 .5rem 0; line-height: 1.25;
+        }
+        .product-description h1 { font-size: 1.25rem; }
+        .product-description h2 { font-size: 1.15rem; }
+        .product-description h3 { font-size: 1.05rem; }
+        .product-description blockquote     { border-left: 3px solid #f9a8d4; padding-left: .75rem; color:#6b7280; margin: 0 0 .75rem 0; font-style: italic; }
+        .product-description hr             { border:0; border-top:1px solid #f3f4f6; margin: 1rem 0; }
+        .product-description code           { background:#f9fafb; padding: .1em .35em; border-radius:.25rem; font-size:.9em; }
+        .product-description pre            { background:#f9fafb; padding:.75rem; border-radius:.5rem; overflow-x:auto; margin:0 0 .75rem 0; }
+        .product-description img            { max-width:100%; height:auto; border-radius:.5rem; margin:.5rem 0; }
     </style>
 </head>
 <body class="antialiased min-h-screen" style="background-color:#fdf4f7;" x-data>
